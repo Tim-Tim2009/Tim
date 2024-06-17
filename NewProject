@@ -1,1 +1,50 @@
-¡Hola!
+#from Crypto.Util.number import *
+
+
+def caesar_cipher():
+    print(ord(" "))
+    text_initial = "LROV LGSUAY SKRUJE QOCO"
+    for f in range(-20,20):
+        letters = ""
+        for l in text_initial:
+            if l == " ": letters += " "
+            else:
+                letter = ord(l)
+    #           if letter<65: letter += 26
+                letter = ((letter+f-65) % 26) +65
+                letters += (chr(letter))
+        print(f, letters)
+
+def ascii():
+    ascii = [99, 114, 121, 112, 116, 111, 123, 65, 83, 67, 73, 73, 95, 112, 114, 49, 110, 116, 52, 98, 108, 51, 125]
+    solution = ""
+    for n in ascii:
+        solution += chr(n)
+    print(solution)
+
+def hex():
+    hex = "63727970746f7b596f755f77696c6c5f62655f776f726b696e675f776974685f6865785f737472696e67735f615f6c6f747d"
+    solution = ""
+    solution = bytes.fromhex(hex)
+    print(solution)
+
+import base64
+def hextobase64():
+    text_in_hex = "72bca9b68fc16ac7beeb8f849dca1d8a783e8acf9679bf9269f7bf"
+    text_in_binary = bytes.fromhex(text_in_hex)
+    text_in_base64 = base64.b64encode(text_in_binary)
+    print(text_in_base64)
+
+def BytesAndBigIntegrers():
+    integrer = 11515195063862318899931685488813747395775516287289682636499965282714637259206269
+    size = (integrer.bit_length()+1)/8
+    solution = integrer.to_bytes(int(size), 'big')
+    print(solution)
+
+def xor():
+    word = "aloha"
+    resukt = ""
+    for l in word:
+        resukt += chr(ord(l)^13)
+    print(resukt)
+xor()
