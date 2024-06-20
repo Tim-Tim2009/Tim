@@ -46,20 +46,50 @@ while True:
     print("Combien d'argent pariez-vous ?")
     pari = input()
     if pari == "bot":
-        somme = int(input("Combien voulez-vous que le bot parie ?"))
-        bot(somme, arg)
-        sortir = True
+        good = False
+        while not good:    
+            try:
+                somme = int(input("Combien voulez-vous que le bot parie ?"))
+                bot(somme, arg)
+                good = True
+                sortir = True
+            except ValueError:
+                print("Entrez un nombre entier svp")
     else:
-        pari = int(pari)
-
+        good = False
+        while not good:    
+            try:
+                pari = int(pari)
+                good = True
+            except ValueError:
+                pari = input("Entrez un nombre ou faites appel au bot: ")
+    if pari == 'bot': pari = 69
     if sortir == False:    
         while pari > arg:
             print("Vous n'avez pas assez d'argent ):. Réessayez:")
-            pari = int(input())
+            good = False
+            while not good:    
+                try:
+                    pari = int(pari)
+                    good = True
+                except ValueError:
+                    pari = input("Entrez un nombre ou faites appel au bot: ")        
         arg -= pari
-        nb_choisi = int(input("Choisissez un nombre entre 1 et 6: "))
+        good = False
+        while not good:    
+            try:
+                nb_choisi = int(input("Choisissez un nombre entre 1 et 6: "))
+                good = True
+            except ValueError:
+                print("Entrez un nombre")
+        good = False
         while nb_choisi > 6 or nb_choisi < 1:
-            nb_choisi = int(input("Choisissez un nombre ENTRE 1 ET 6: "))
+            while not good:    
+                try:
+                    nb_choisi = int(input("CHOISISSEZ UN NOMBRE ENTRE 1 ET 6: "))
+                    good = True
+                except ValueError:
+                    print("J'ai dit...")
 
         nb_du_de = random.randint(1,6)
         if nb_choisi == nb_du_de:
@@ -74,4 +104,4 @@ while True:
             break
         elif arg <= 0:    
             print("\n\n\n\n\n\n\n\n\n\nPERDU! Vous n'avez plus d'argent...\n")
-            break
+            break                   
