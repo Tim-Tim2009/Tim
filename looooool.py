@@ -2,6 +2,7 @@ import pygame, math, random, time
 import pandas as pd
 from openpyxl import load_workbook
 import os
+import sqlite3
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
@@ -137,6 +138,11 @@ def draw_top_bar(FEN, elapsed_time, targets_pressed, misses, wave, score):
     FEN.blit(wave_label, (700, 5))
 
 def save_game_data(file_name, data):
+    conn = sqlite3.connect('example.db')
+
+
+
+
     df = pd.DataFrame([data])
     if os.path.exists(file_name):
         df.to_csv(file_name, mode='a', header=False, index=False)
