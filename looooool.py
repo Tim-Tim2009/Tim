@@ -13,6 +13,9 @@ pygame.display.set_caption("Aim Trainer")
 TARGET_INCREMENT = 800
 TARGET_EVENT = pygame.USEREVENT
 
+BIRD_EVENT = pygame.USEREVENT + 4
+BIRD_INCREMENT = 10000
+
 TARGET_WAVE1_EVENT = pygame.USEREVENT + 1
 
 TARGET_WAVE2_EVENT = pygame.USEREVENT + 2
@@ -29,6 +32,19 @@ LABEL_FONT = pygame.font.SysFont("comicsans", 24)
 GAMEOVER_FONT = pygame.font.SysFont("consolas", 70, bold=True)
 LABEL_COLOR = "white"
 
+background = pygame.image.load('background.png')
+FEN.blit(background, (0,50))
+
+bird_images = [
+    pygame.image.load('bird1.png'),
+    pygame.image.load('bird2.png'),
+    pygame.image.load('bird3.png'),
+    pygame.image.load('bird4.png'),
+    pygame.image.load('bird5.png'),
+    pygame.image.load('bird6.png')
+]
+
+
 class Target:
     ISBONUS = False
     MAX_SIZE = 30
@@ -41,14 +57,19 @@ class Target:
     GOLD_COLOR = (255, 215, 0)
     SECOND_COLOR = "white"
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, bonus, gold):
         self.x = x
         self.y = y
         self.size = 0
         self.grow = True
-        self.ISBONUS = random.randint(0, 10) == 10
+        self.bonuschances = bonus
+        self.goldchances = gold
+
+        self.ISBONUS = random.randint(0, self.bonuschances) == 1
         if not self.ISBONUS:
-            self.ISGOLD = random.randint(0, 20) == 20
+            self.ISGOLD = random.randint(0, self.goldchances) == 2
+        else:
+            self.ISGOLD = False
 
     def update(self):
         if self.ISBONUS:
@@ -103,10 +124,43 @@ class Target:
     
     def isgold(self):    
         return self.ISGOLD
+    
+        
+class Bird():
+    def __init__(self, x, y, image):
+        self.x = x
+        self.y = y
+        self.size = 100  # Taille de l'oiseau pour la collision
+        self.images = [
+            pygame.image.load('bird1.png'),
+            pygame.image.load('bird2.png'),
+            pygame.image.load('bird3.png'),
+            pygame.image.load('bird4.png'),
+            pygame.image.load('bird5.png'),
+            pygame.image.load('bird6.png')
+        ]
+        self.pos = 0
+        
+        self.animation_interval = 0.1  # Intervalle d'animation en secondes
+        self.last_update_time = time.time()  # Temps de la dernière mise à jour
+
+    def draw(self, FEN):
+        current_time = time.time()
+        if current_time - self.last_update_time >= self.animation_interval:
+            self.last_update_time = current_time
+            self.pos += 1
+            self.x += 50
+            if self.pos == 6:
+                self.pos = 0
+        FEN.blit(self.images[self.pos], (self.x, self.y))
+
+    def collide(self, x, y):
+        dis = math.sqrt((self.x - x) ** 2 + (self.y - y) ** 2)
+        return dis <= self.size
 
 def draw(FEN, targets):
-    FEN.fill(BG_COLOR)
-
+    FEN.blit(background, (0, 50))
+    
     for target in targets:
         target.draw(FEN)
 
@@ -208,7 +262,8 @@ def end_screen(FEN, elapsed_time, targets_pressed, clicks, score):
     pygame.quit()
     print("Exiting end_screen function")
     quit()
-        
+
+    
 def get_middle(surface):
     return WIDTH / 2 - surface.get_width()/2
 
@@ -224,12 +279,25 @@ def main():
     misses = 0
     start_time = time.time()
 
+    bonuschances = 10
+    goldchances = 20
+
     wave = 0
     wave1 = False
     wave2 = False
     wave3 = False
 
+    isbirdevent = False
+
+    birdy = random.randint(50, HEIGHT)
+    birdx = -100
+    bird_pos = (birdx, birdy)
+
+
+    bird = Bird(birdx, birdy, bird_images[0])
+
     pygame.time.set_timer(TARGET_EVENT, TARGET_INCREMENT)
+    pygame.time.set_timer(BIRD_EVENT, BIRD_INCREMENT)
     
     while run:
         run = True
@@ -247,12 +315,15 @@ def main():
             if event.type == TARGET_EVENT or event.type == TARGET_WAVE1_EVENT or event.type == TARGET_WAVE2_EVENT or event.type == TARGET_WAVE3_EVENT:
                 x = random.randint(TARGET_PADDING, WIDTH - TARGET_PADDING)
                 y = random.randint(TARGET_PADDING + TOP_BAR_HEIGTH, HEIGHT - TARGET_PADDING)
-                target = Target(x, y)
+                target = Target(x, y, bonuschances, goldchances)
                 targets.append(target)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click = True
                 clicks += 1
+
+            if event.type == BIRD_EVENT:
+                isbirdevent = True
 
         for target in targets:
             target.update()
@@ -275,7 +346,8 @@ def main():
                 else:
                     score += 1
                 targets_pressed += 1
-        
+            
+
         if misses >= actual_lives:
             end_screen(FEN, elapsed_time, targets_pressed, clicks, score)
             break
@@ -300,6 +372,22 @@ def main():
             wave += 1
         
         draw(FEN, targets)
+
+        if isbirdevent:
+            bird.draw(FEN)
+        
+            if click and bird.collide(*mouse_pos):
+                bonuschances = round(bonuschances * 0.8)
+                goldchances = round(goldchances * 0.8)
+                isbirdevent = False
+                bird.x = -200
+                bird.y = random.randint(100, HEIGHT - 100)
+            
+            if bird.x >= WIDTH + 150:
+                isbirdevent = False
+                bird.x = -200
+                bird.y = random.randint(100, HEIGHT - 100)
+        
         draw_top_bar(FEN, elapsed_time, targets_pressed, misses, wave, score)
         pygame.display.update()
 
